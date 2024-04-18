@@ -6,7 +6,7 @@ use bevy::{
         render_asset::RenderAssetUsages,
         render_resource::{PrimitiveTopology, VertexFormat},
     },
-    utils::thiserror,
+    utils::ConditionalSendFuture,
 };
 use las::Read;
 use thiserror::Error;
@@ -72,7 +72,7 @@ impl AssetLoader for LasLoader {
         reader: &'a mut Reader,
         _settings: &'a (),
         _load_context: &'a mut LoadContext,
-    ) -> bevy::utils::BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
+    ) -> impl ConditionalSendFuture<Output = Result<Self::Asset, Self::Error>> {
         Box::pin(async move {
             let mut bytes = Vec::new();
             reader.read_to_end(&mut bytes).await?;

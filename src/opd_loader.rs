@@ -4,7 +4,7 @@ use bevy::{
     math::Vec3A,
     prelude::*,
     render::{render_asset::RenderAssetUsages, render_resource::PrimitiveTopology},
-    utils::{thiserror, BoxedFuture},
+    utils::ConditionalSendFuture,
 };
 use thiserror::Error;
 
@@ -70,7 +70,7 @@ impl AssetLoader for OpdLoader {
         reader: &'a mut Reader,
         _settings: &'a (),
         _load_context: &'a mut LoadContext,
-    ) -> BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
+    ) -> impl ConditionalSendFuture<Output = Result<Self::Asset, Self::Error>> {
         Box::pin(async move {
             let mut bytes = Vec::new();
             reader.read_to_end(&mut bytes).await?;

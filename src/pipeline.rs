@@ -14,8 +14,8 @@ use bevy::{
 };
 
 use crate::{
-    clippling_planes::UniformBufferOfGpuClippingPlaneRanges, PointCloudAsset,
-    PointCloudPlaybackControls, PointCloudUniform,
+    clippling_planes::UniformBufferOfGpuClippingPlaneRanges, PointCloudPlaybackControls,
+    PointCloudUniform, PreparedPointCloudAsset,
 };
 
 pub(crate) const POINT_CLOUD_VERT_SHADER_HANDLE: Handle<Shader> =
@@ -513,7 +513,7 @@ pub fn prepare_animated_assets(
     queue: Res<RenderQueue>,
     render_device: Res<RenderDevice>,
     pipeline: Res<PointCloudPipeline>,
-    mut assets: ResMut<RenderAssets<PointCloudAsset>>,
+    mut assets: ResMut<RenderAssets<PreparedPointCloudAsset>>,
     playback: ResMut<PointCloudPlaybackControls>,
 ) {
     for (handle, asset) in assets.iter_mut() {

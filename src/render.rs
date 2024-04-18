@@ -69,14 +69,14 @@ pub(crate) fn queue_point_cloud(
     cache: Res<PipelineCache>,
     views: Query<(Entity, &VisibleEntities)>,
     items: Query<&Handle<PointCloudAsset>>,
-    point_clouds: Res<RenderAssets<PointCloudAsset>>,
+    point_clouds: Res<RenderAssets<PreparedPointCloudAsset>>,
     msaa: Option<Res<Msaa>>,
     mut commands: Commands,
 ) {
     let msaa = msaa.map(|a| a.samples()).unwrap_or(1);
     for (view_entity, entities) in &views {
         let mut list = vec![];
-        for &entity in &entities.entities {
+        for &entity in entities.iter::<With<PotreePointCloud>>() {
             if let Some(asset) = items
                 .get(entity)
                 .ok()
@@ -270,23 +270,27 @@ impl PreparedPointCloudAsset {
     }
 }
 
-impl RenderAsset for PointCloudAsset {
-    type PreparedAsset = PreparedPointCloudAsset;
+impl RenderAsset for PreparedPointCloudAsset {
+    type SourceAsset = PointCloudAsset;
 
     type Param = (SRes<RenderDevice>, SRes<PointCloudPipeline>);
 
     fn prepare_asset(
-        self,
+        source_asset: Self::SourceAsset,
         (render_device, pipeline): &mut SystemParamItem<Self::Param>,
-    ) -> Result<Self::PreparedAsset, bevy::render::render_asset::PrepareAssetError<Self>> {
+    ) -> Result<Self, bevy::render::render_asset::PrepareAssetError<Self::SourceAsset>> {
         let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             usage: BufferUsages::STORAGE,
             label: Some("point_cloud_vertex_buffer"),
-            contents: self.mesh.get_vertex_buffer_data().as_slice(),
+            contents: source_asset.mesh.get_vertex_buffer_data().as_slice(),
         });
 
-        let animation_buffer = if self.animation.is_some() {
-            let size = self.mesh.attribute(Mesh::ATTRIBUTE_POSITION).unwrap().len() as u64
+        let animation_buffer = if source_asset.animation.is_some() {
+            let size = source_asset
+                .mesh
+                .attribute(Mesh::ATTRIBUTE_POSITION)
+                .unwrap()
+                .len() as u64
                 * std::mem::size_of::<f32>() as u64
                 * 3
                 + std::mem::size_of::<f32>() as u64;
@@ -308,21 +312,21 @@ impl RenderAsset for PointCloudAsset {
         };
         let mut asset = PreparedPointCloudAsset {
             buffer,
-            num_points: self.mesh.count_vertices() as u32,
+            num_points: source_asset.mesh.count_vertices() as u32,
             bind_group: None,
             animation_buffer,
-            frames: self.animation,
+            frames: source_asset.animation,
             current_animation_frame: 0,
             animation_time: 0.0,
             animation_frame_start_time: 0.0,
-            animation_scale: self.animation_scale,
-            colored: self.mesh.contains_attribute(ATTRIBUTE_COLOR),
+            animation_scale: source_asset.animation_scale,
+            colored: source_asset.mesh.contains_attribute(ATTRIBUTE_COLOR),
         };
         asset.update_bind_group(render_device, pipeline);
         Ok(asset)
     }
 
-    fn asset_usage(&self) -> RenderAssetUsages {
+    fn asset_usage(_source_asset: &Self::SourceAsset) -> RenderAssetUsages {
         RenderAssetUsages::all()
     }
 }

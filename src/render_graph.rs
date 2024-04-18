@@ -1,5 +1,5 @@
 use crate::pipeline::{EyeDomeViewTarget, PointCloudBindGroup, PointCloudPipeline};
-use crate::{PointCloudAsset, PointCloudDrawList, PointCloudUniform};
+use crate::{PointCloudAsset, PointCloudDrawList, PointCloudUniform, PreparedPointCloudAsset};
 use bevy::{
     ecs::query::QueryItem,
     prelude::*,
@@ -58,7 +58,7 @@ impl ViewNode for PointCloudNode {
     ) -> Result<(), bevy::render::render_graph::NodeRunError> {
         let point_cloud_pipeline = world.resource::<PointCloudPipeline>();
         let pipeline_cache = world.resource::<PipelineCache>();
-        let render_assets = world.resource::<RenderAssets<PointCloudAsset>>();
+        let render_assets = world.resource::<RenderAssets<PreparedPointCloudAsset>>();
 
         let mut tracked_pass = render_context.begin_tracked_render_pass(RenderPassDescriptor {
             label: Some("point_cloud"),
@@ -70,7 +70,7 @@ impl ViewNode for PointCloudNode {
                     view: &eye_dome_view_target.depth_texture_view,
                     resolve_target: None,
                     ops: Operations {
-                        load: LoadOp::Clear(Color::BLACK.into()),
+                        load: LoadOp::Clear(LinearRgba::BLACK.into()),
                         store: StoreOp::Store,
                     },
                 }),

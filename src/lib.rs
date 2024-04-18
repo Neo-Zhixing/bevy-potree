@@ -10,7 +10,7 @@ mod render;
 mod render_graph;
 use bevy::{
     asset::load_internal_asset,
-    core_pipeline::core_3d::graph::{Labels3d::EndMainPass, SubGraph3d},
+    core_pipeline::core_3d::graph::{Core3d, Node3d},
     prelude::*,
     render::{
         extract_component::UniformComponentPlugin,
@@ -18,6 +18,7 @@ use bevy::{
         render_asset::RenderAssetPlugin,
         render_graph::{RenderGraphApp, ViewNodeRunner},
         render_resource::{ShaderStage, SpecializedRenderPipelines},
+        view::{check_visibility, VisibilitySystems},
         Render, RenderApp, RenderSet,
     },
 };
@@ -45,11 +46,18 @@ impl Plugin for PointCloudPlugin {
         app.init_asset_loader::<OpdLoader>();
 
         app.add_plugins((
-            RenderAssetPlugin::<PointCloudAsset>::default(),
+            RenderAssetPlugin::<PreparedPointCloudAsset>::default(),
             UniformComponentPlugin::<PointCloudUniform>::default(),
             ExtractResourcePlugin::<PointCloudPlaybackControls>::default(),
         ))
-        .add_systems(PostUpdate, PointCloudPlaybackControls::playback_system)
+        .add_systems(
+            PostUpdate,
+            (
+                PointCloudPlaybackControls::playback_system,
+                check_visibility::<With<PotreePointCloud>>
+                    .in_set(VisibilitySystems::CheckVisibility),
+            ),
+        )
         .init_resource::<PointCloudPlaybackControls>();
 
         load_internal_asset!(
@@ -101,8 +109,8 @@ impl Plugin for PointCloudPlugin {
             .init_resource::<PointCloudPlaybackControls>();
 
         render_app
-            .add_render_graph_node::<ViewNodeRunner<PointCloudNode>>(SubGraph3d, PointCloudLabel)
-            .add_render_graph_edge(SubGraph3d, EndMainPass, PointCloudLabel);
+            .add_render_graph_node::<ViewNodeRunner<PointCloudNode>>(Core3d, PointCloudLabel)
+            .add_render_graph_edge(Core3d, Node3d::EndMainPass, PointCloudLabel);
     }
 
     fn finish(&self, app: &mut App) {
