@@ -18,12 +18,10 @@ use crate::{
     PointCloudPlaybackControls, PointCloudUniform,
 };
 
-pub(crate) const POINT_CLOUD_VERT_SHADER_HANDLE: Handle<Shader> =
+pub(crate) const POINT_CLOUD_SHADER_HANDLE: Handle<Shader> =
     Handle::weak_from_u128(0x3fc9d1ff70cedf01);
-pub(crate) const POINT_CLOUD_FRAG_SHADER_HANDLE: Handle<Shader> =
-    Handle::weak_from_u128(0x3fc9d1ff70cedf02);
 pub(crate) const EYE_DOME_LIGHTING_SHADER_HANDLE: Handle<Shader> =
-    Handle::weak_from_u128(0x3fc9d1ff70cedf03);
+    Handle::weak_from_u128(0x3fc9d1ff70cedf02);
 
 #[derive(Resource)]
 pub struct PointCloudPipeline {
@@ -217,7 +215,7 @@ impl SpecializedRenderPipeline for PointCloudPipeline {
                 self.model_layout.clone(),
             ],
             vertex: VertexState {
-                shader: POINT_CLOUD_VERT_SHADER_HANDLE,
+                shader: POINT_CLOUD_SHADER_HANDLE,
                 shader_defs: {
                     let mut defs = Vec::new();
                     if colored {
@@ -228,7 +226,7 @@ impl SpecializedRenderPipeline for PointCloudPipeline {
                     }
                     defs
                 },
-                entry_point: "main".into(),
+                entry_point: "vertex".into(),
                 buffers: vec![VertexBufferLayout {
                     array_stride: 8,
                     step_mode: VertexStepMode::Vertex,
@@ -240,7 +238,7 @@ impl SpecializedRenderPipeline for PointCloudPipeline {
                 }],
             },
             fragment: Some(FragmentState {
-                shader: POINT_CLOUD_FRAG_SHADER_HANDLE,
+                shader: POINT_CLOUD_SHADER_HANDLE,
                 shader_defs: {
                     let mut defs = Vec::new();
                     if colored {
@@ -251,7 +249,7 @@ impl SpecializedRenderPipeline for PointCloudPipeline {
                     }
                     defs
                 },
-                entry_point: "main".into(),
+                entry_point: "fragment".into(),
                 targets: vec![
                     Some(ColorTargetState {
                         format: TextureFormat::Rgba8UnormSrgb,

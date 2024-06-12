@@ -16,7 +16,7 @@ use bevy::{
         extract_resource::ExtractResourcePlugin,
         render_asset::RenderAssetPlugin,
         render_graph::{RenderGraphApp, ViewNodeRunner},
-        render_resource::{ShaderStage, SpecializedRenderPipelines},
+        render_resource::SpecializedRenderPipelines,
         Render, RenderApp, RenderSet,
     },
 };
@@ -50,18 +50,8 @@ impl Plugin for PointCloudPlugin {
         .add_systems(PostUpdate, PointCloudPlaybackControls::playback_system)
         .init_resource::<PointCloudPlaybackControls>();
 
-        load_internal_asset!(
-            app,
-            POINT_CLOUD_VERT_SHADER_HANDLE,
-            "shader.vert",
-            |s, path| { Shader::from_glsl(s, ShaderStage::Vertex, path) }
-        );
-        load_internal_asset!(
-            app,
-            POINT_CLOUD_FRAG_SHADER_HANDLE,
-            "shader.frag",
-            |s, path| { Shader::from_glsl(s, ShaderStage::Fragment, path) }
-        );
+        load_internal_asset!(app, POINT_CLOUD_SHADER_HANDLE, "cloud.wgsl", Shader::from_wgsl);
+
         load_internal_asset!(
             app,
             EYE_DOME_LIGHTING_SHADER_HANDLE,
