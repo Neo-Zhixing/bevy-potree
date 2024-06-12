@@ -9,7 +9,7 @@ mod render;
 mod render_graph;
 use bevy::{
     asset::load_internal_asset,
-    core_pipeline::core_3d::CORE_3D,
+    core_pipeline::core_3d::graph::{Core3d, Node3d},
     prelude::*,
     render::{
         extract_component::UniformComponentPlugin,
@@ -89,12 +89,8 @@ impl Plugin for PointCloudPlugin {
             .init_resource::<PointCloudPlaybackControls>();
 
         render_app
-            .add_render_graph_node::<ViewNodeRunner<PointCloudNode>>(CORE_3D, PointCloudNode::NAME)
-            .add_render_graph_edge(
-                CORE_3D,
-                bevy::core_pipeline::core_3d::graph::node::END_MAIN_PASS,
-                PointCloudNode::NAME,
-            );
+            .add_render_graph_node::<ViewNodeRunner<PointCloudNode>>(Core3d, PointCloudLabel)
+            .add_render_graph_edge(Core3d, Node3d::EndMainPass, PointCloudLabel);
     }
 
     fn finish(&self, app: &mut App) {

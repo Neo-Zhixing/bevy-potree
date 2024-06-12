@@ -14,7 +14,7 @@ default = ["opd", "las"]
 opd = ["opd-parser"]
 
 [dependencies]
-bevy = "0.12.1"
+bevy = "0.13.2"
 opd-parser = { version = "0.3.0", optional = true }
 anyhow = "1"
 las = { version = "0.8", features = ["laz"], optional = true }
