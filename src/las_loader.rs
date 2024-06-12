@@ -3,8 +3,7 @@ use bevy::{
     prelude::*,
     reflect::TypePath,
     render::{
-        mesh::MeshVertexAttribute,
-        render_resource::{PrimitiveTopology, VertexFormat},
+        mesh::MeshVertexAttribute, render_asset::RenderAssetUsages, render_resource::{PrimitiveTopology, VertexFormat}
     },
     utils::thiserror::{self, Error},
 };
@@ -91,7 +90,7 @@ impl AssetLoader for LasLoader {
             let mut bytes = Vec::new();
             reader.read_to_end(&mut bytes).await?;
             let mut reader = las::Reader::new(std::io::Cursor::new(bytes))?;
-            let mut mesh = Mesh::new(PrimitiveTopology::PointList);
+            let mut mesh = Mesh::new(PrimitiveTopology::PointList, RenderAssetUsages::all());
             let mut max: Point = [f32::MIN; 3].into();
             let mut min: Point = [f32::MAX; 3].into();
             let (mut positions, colors): (Vec<_>, Vec<_>) = reader

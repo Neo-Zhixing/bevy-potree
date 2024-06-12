@@ -9,14 +9,14 @@ mod render;
 mod render_graph;
 use bevy::{
     asset::load_internal_asset,
-    core_pipeline::core_3d::CORE_3D,
+    core_pipeline::core_3d::graph::{Core3d, Node3d},
     prelude::*,
     render::{
         extract_component::UniformComponentPlugin,
         extract_resource::ExtractResourcePlugin,
         render_asset::RenderAssetPlugin,
         render_graph::{RenderGraphApp, ViewNodeRunner},
-        render_resource::{ShaderStage, SpecializedRenderPipelines},
+        render_resource::SpecializedRenderPipelines,
         Render, RenderApp, RenderSet,
     },
 };
@@ -50,18 +50,8 @@ impl Plugin for PointCloudPlugin {
         .add_systems(PostUpdate, PointCloudPlaybackControls::playback_system)
         .init_resource::<PointCloudPlaybackControls>();
 
-        load_internal_asset!(
-            app,
-            POINT_CLOUD_VERT_SHADER_HANDLE,
-            "shader.vert",
-            |s, path| { Shader::from_glsl(s, ShaderStage::Vertex, path) }
-        );
-        load_internal_asset!(
-            app,
-            POINT_CLOUD_FRAG_SHADER_HANDLE,
-            "shader.frag",
-            |s, path| { Shader::from_glsl(s, ShaderStage::Fragment, path) }
-        );
+        load_internal_asset!(app, POINT_CLOUD_SHADER_HANDLE, "cloud.wgsl", Shader::from_wgsl);
+
         load_internal_asset!(
             app,
             EYE_DOME_LIGHTING_SHADER_HANDLE,
@@ -99,12 +89,8 @@ impl Plugin for PointCloudPlugin {
             .init_resource::<PointCloudPlaybackControls>();
 
         render_app
-            .add_render_graph_node::<ViewNodeRunner<PointCloudNode>>(CORE_3D, PointCloudNode::NAME)
-            .add_render_graph_edge(
-                CORE_3D,
-                bevy::core_pipeline::core_3d::graph::node::END_MAIN_PASS,
-                PointCloudNode::NAME,
-            );
+            .add_render_graph_node::<ViewNodeRunner<PointCloudNode>>(Core3d, PointCloudLabel)
+            .add_render_graph_edge(Core3d, Node3d::EndMainPass, PointCloudLabel);
     }
 
     fn finish(&self, app: &mut App) {

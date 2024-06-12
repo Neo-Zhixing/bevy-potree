@@ -3,7 +3,7 @@ use bevy::{
     asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext},
     math::Vec3A,
     prelude::*,
-    render::render_resource::PrimitiveTopology,
+    render::{render_asset::RenderAssetUsages, render_resource::PrimitiveTopology},
     utils::{
         thiserror::{self, Error},
         BoxedFuture,
@@ -35,7 +35,7 @@ impl OpdLoader {
             *position -= position_offset;
         }
 
-        let mut mesh = Mesh::new(PrimitiveTopology::PointList);
+        let mut mesh = Mesh::new(PrimitiveTopology::PointList, RenderAssetUsages::all());
         mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions);
 
         Ok(PointCloudAsset {
